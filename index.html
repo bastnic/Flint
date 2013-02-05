@@ -1,0 +1,247 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Flint by henrikbjorn</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Flint</h1>
+        <p class="header">Enhancements to Silex with structure and conventions.</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/henrikbjorn/Flint/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/henrikbjorn/Flint/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/henrikbjorn/Flint">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/henrikbjorn">henrikbjorn</a></p>
+
+
+      </header>
+      <section>
+        <h1>Flint</h1>
+
+<p><a href="https://travis-ci.org/henrikbjorn/Flint"><img src="https://travis-ci.org/henrikbjorn/Flint.png?branch=master" alt="Build Status"></a></p>
+
+<p>Flint is build on top of <a href="http://silex.sensionlabs.org">Silex</a> and tries to bring structure, conventions and a couple of <a href="http://symfony.com">Symfony</a> features.</p>
+
+<h2>What is Different from Silex</h2>
+
+<p>Nothing and everything. Everything Silex does, Flint does aswell. This means that it is fully backwards compatible. So if closures are your thing, then dont stop using does but still get some benefit.</p>
+
+<ul>
+<li>
+<a href="http://twig.sensiolabs.org">Twig</a> is enabled by default.</li>
+<li>Uses the full router instead of the url matcher for more power and flexibility.</li>
+<li>Supports using <code>xml|yml|php</code> files for router configuration.</li>
+<li>Custom controller resolver that knows how to inject your application.</li>
+<li>A base controller with convenient helper methods.</li>
+<li>Custom error pages by using the default exception handler from Symfony.</li>
+</ul><h2>Documentation</h2>
+
+<ul>
+<li><a href="#getting-started">Getting started</a></li>
+<li><a href="#controllers">Controllers</a></li>
+<li><a href="#routing">Routing</a></li>
+<li><a href="#custom-error-pages">Custom Error Pages</a></li>
+<li><a href="#default-parameters">Default Parameters</a></li>
+<li><a href="#injecting-configuration-parameters">Injecting Configuration Parameters</a></li>
+</ul><h3>Getting started</h3>
+
+<p>For starting up a new project the easiest way is to use <a href="http://getcomposer.org">Composer</a> and <a href="http://github.com/henrikbjorn/flint-skeleton">Flint-Skeleton</a>.</p>
+
+<div class="highlight"><pre><span class="nv">$ </span>php composer.phar create-project -s dev henrikbjorn/flint-skeleton my-flint-application
+</pre></div>
+
+<p>Or if you are migrating from a Silex project change your <code>composer.json</code> file to require Flint and change the Application class that is used.</p>
+
+<div class="highlight"><pre><span class="nv">$ </span>php composer.phar require henrikbjorn/flint:~1.0
+</pre></div>
+
+<div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+
+<span class="k">use</span> <span class="nx">Flint\Application</span><span class="p">;</span>
+
+<span class="nv">$application</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Application</span><span class="p">(</span><span class="nv">$rootDir</span><span class="p">,</span> <span class="nv">$debug</span><span class="p">);</span>
+</pre></div>
+
+<p>It is recommended to subclass <code>Flint\Application</code> instead of using the application class directly.</p>
+
+<h3>Controllers</h3>
+
+<p>Flint tries to make Silex more like Symfony. And by using closures it is hard to seperate controllers in a logic way when you have more than a
+couple of them. To make it better it is recommended to use classes and methods for controllers. The basics is <a href="http://silex.sensiolabs.org/doc/usage.html#controllers-in-classes">explained here</a>
+but Flint takes it further and allows the application to be injected into a controller.</p>
+
+<p>The first way to accomplish this is by implementing <code>ApplicationAwareInterface</code> or extending <code>ApplicationAware</code>. This works exactly <a href="http://symfony.com/doc/2.0/book/controller.html#the-base-controller-class">as described in Symfony</a>.
+With the only exception that the property is called <code>$app</code> instead of <code>$container</code>.</p>
+
+<div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+
+<span class="k">namespace</span> <span class="nx">Acme\Controller</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">Flint\ApplicationAware</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">HelloController</span> <span class="k">extends</span> <span class="nx">ApplicationAware</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">indexAction</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">app</span><span class="p">[</span><span class="s1">'twig'</span><span class="p">]</span><span class="o">-&gt;</span><span class="na">render</span><span class="p">(</span><span class="s1">'Hello/index.html.twig'</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>The other way is to use a base controller. Flint ships with one that mimics most of the one provider with Symfony. To see what methods it implements
+go look at the source code for <code>Flint\Controller\Controller</code>.</p>
+
+<div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+
+<span class="k">namespace</span> <span class="nx">Acme\Controller</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">Flint\Controller\Controller</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">HelloController</span> <span class="k">extends</span> <span class="nx">Controller</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">indexAction</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">render</span><span class="p">(</span><span class="s1">'Hello/index.html.twig'</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<h3>Routing</h3>
+
+<p>Because Flint replaces the url matcher used in Symfony with the full router implementation a lot of new things is possible.</p>
+
+<p>Caching is one of thoose things. It makes your application faster as it does not need to register routes on every request.
+Together with loading your routes from a configuration file like Symfony it will also bring more structure to your application.</p>
+
+<p>To enable caching you just need to point the router to the directory you want to use and if it should cache or not. By default the
+<code>debug</code> parameter will be used as to determaine if cache should be used or not.</p>
+
+<div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+
+<span class="c1">// .. create a $app before this line</span>
+<span class="nv">$app</span><span class="o">-&gt;</span><span class="na">inject</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+    <span class="s1">'routing.options'</span> <span class="o">=&gt;</span> <span class="k">array</span><span class="p">(</span>
+        <span class="s1">'cache_dir'</span> <span class="o">=&gt;</span> <span class="s1">'/my/cache/directory/routing'</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">));</span>
+</pre></div>
+
+<p>Before it is possible to use the full power of caching it is needed to use configuration files because Silex will always call
+add routes via its convenience methods <code>get|post|delete|put</code>. Furtunately this is baked right in.</p>
+
+<div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+
+<span class="c1">// .. create $app</span>
+<span class="nv">$app</span><span class="o">-&gt;</span><span class="na">inject</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+    <span class="s1">'routing.resource'</span> <span class="o">=&gt;</span> <span class="s1">'config/routing.xml'</span><span class="p">,</span>
+<span class="p">));</span>
+</pre></div>
+
+<div class="highlight"><pre><span class="c">&lt;!-- config/routing.xml --&gt;</span>
+<span class="cp">&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</span>
+<span class="nt">&lt;routes</span> <span class="na">xmlns=</span><span class="s">"http://symfony.com/schema/routing"</span>
+    <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span>
+    <span class="na">xsi:schemaLocation=</span><span class="s">"http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;route</span> <span class="na">id=</span><span class="s">"homepage"</span> <span class="na">pattern=</span><span class="s">"/"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;default</span> <span class="na">key=</span><span class="s">"_controller"</span><span class="nt">&gt;</span>Acme\\Controller\\DefaultController::indexAction<span class="nt">&lt;/default&gt;</span>
+    <span class="nt">&lt;/route&gt;</span>
+<span class="nt">&lt;/routes&gt;</span>
+</pre></div>
+
+<p>This will make the router load that resource by default. Here xml is used as an example but <code>php</code> is also supported together with
+<code>yml</code> if <code>Symfony\Component\Yaml\Yaml</code> is autoloadable.</p>
+
+<p>The benefit from doing it this way is of course they can be cached but also it allows you to import routing files that are included
+in libraries and even other Symfony bundles such as the <a href="https://github.com/symfony/webprofilerbundle">WebProfilerBundle</a>. Also it will make it easier to generate routes from
+inside your views.</p>
+
+<div class="highlight"><pre><span class="x">&lt;a href="</span><span class="cp">{{</span> <span class="nv">app.router.generate</span><span class="o">(</span><span class="s1">'homepage'</span><span class="o">)</span> <span class="cp">}}</span><span class="x">"&gt;Homepage&lt;/a&gt;</span>
+</pre></div>
+
+<p>This is also possible with Silex but with a more verbose syntax.</p>
+
+<h3>Default Parameters</h3>
+
+<p>The two contructor arguments <code>$rootDir</code> and <code>$debug</code> are also registered on the application as parameters. This makes it easier 
+for services to add paths for caching, logs or other directories.</p>
+
+<div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+
+<span class="c1">// .. create $app</span>
+<span class="nv">$app</span><span class="o">-&gt;</span><span class="na">inject</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+    <span class="s1">'twig.path'</span> <span class="o">=&gt;</span> <span class="nv">$app</span><span class="p">[</span><span class="s1">'root_dir'</span><span class="p">]</span> <span class="o">.</span> <span class="s1">'/views'</span><span class="p">,</span>
+<span class="p">));</span>
+</pre></div>
+
+<h3>Custom Error Pages</h3>
+
+<p>When finished a project or application it is the small things that matter the most. Such as having a custom error page instead of the one
+Silex provides by default. Also it can help a lost user navigate back. Flint makes this possible by using the exception handler from Symfony 
+and a dedicated controller. Both the views and the controller can be overrriden.</p>
+
+<p>This will only work when debug is turned off.</p>
+
+<p>To override the error pages the same logic is used as inside Symfony.
+The logic is very well described <a href="http://symfony.com/doc/master/cookbook/controller/error_pages.html">in their documentation</a>.</p>
+
+<p>Only difference from Symfony is the templates must be created inside <code>views/Excetion/</code> directory. Inside the templates there is
+access to <code>app</code> which in turns gives you access to all of the services defined. </p>
+
+<p>To override the controller used by the exception handler change the <code>exception_controller</code> parameter. This parameter will by default
+be set to <code>Flint\\Controller\\ExceptionController::showAction</code>.</p>
+
+<div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+
+<span class="c1">// .. create $app</span>
+<span class="nv">$app</span><span class="o">-&gt;</span><span class="na">inject</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+    <span class="s1">'exception_controller'</span> <span class="o">=&gt;</span> <span class="s1">'Acme\\Controller\\ExceptionController::showAction'</span><span class="p">,</span>
+<span class="p">));</span>
+</pre></div>
+
+<p>To see what parameter the controller action takes look at the one provided by default. Normally it should not be overwritten as it already
+gives a lot of flexibilty with the template lookup.</p>
+
+<h3>Injecting Configuration Parameters</h3>
+
+<p>Some times it is more useful to inject an array of parameters instead of setting them on the application one-by-one. Flint have a method that 
+does this. It does the same thing as the second parameter of Silex <code>register</code> method.</p>
+
+<div class="highlight"><pre><span class="o">&lt;?</span><span class="nx">php</span>
+
+<span class="c1">// .. $app</span>
+<span class="nv">$app</span><span class="o">-&gt;</span><span class="na">inject</span><span class="p">(</span><span class="k">array</span><span class="p">(</span>
+    <span class="s1">'twig.paths'</span> <span class="o">=&gt;</span> <span class="s1">'/my/path/to/views'</span><span class="p">,</span>
+<span class="p">));</span>
+</pre></div>
+
+<h2>Feedback</h2>
+
+<p>Please provide feedback on everything (code, structure, idea etc) over twitter or email.</p>
+
+<h2>Who</h2>
+
+<p>Build by <a href="http://twitter.com/henrikbjorn">@henrikbjorn</a> at <a href="http://peytz.dk">Peytz &amp; Co</a>. With the help of <a href="https://github.com/henrikbjorn/flint/graphs/contributors">other contributors</a>.</p>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
