@@ -3,47 +3,46 @@
 namespace Flint\Config\Loader;
 
 use Flint\Config\Normalizer\NormalizerInterface;
-use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\FileLocatorInterface;
+use Symfony\Component\Config\Exception\FileLoaderLoadException;
 
 /**
  * @package Flint
  */
-class JsonFileLoader
+class JsonFileLoader extends \Symfony\Component\Config\Loader\FileLoader
 {
-    protected $locator;
     protected $normalizer;
 
     /**
-     * @param FileLocator $locator
-     * @param ChainNormalizer $normalizer
+     * @param NormalizerInterface $normalizer
+     * @param FileLocatorInterface $locator
      */
-    public function __construct(FileLocator $locator, NormalizerInterface $normalizer)
+    public function __construct(NormalizerInterface $normalizer, FileLocatorInterface $locator)
     {
-        $this->locator = $locator;
+        parent::__construct($locator);
+
         $this->normalizer = $normalizer;
     }
 
     /**
-     * @param string $file
-     * @return array
+     * {@inheritDoc}
      */
-    public function load($file)
+    public function load($resource, $type = null)
     {
-        if (!$this->supports($file)) {
-            throw new \InvalidArgumentException('Format for file "' . $file . '" is not supported.');
+        if (!$this->supports($resource)) {
+            throw new FileLoaderLoadException($resource);
         } 
 
-        $contents = file_get_contents($this->locator->locate($file));
+        $contents = file_get_contents($this->locator->locate($resource));
 
         return json_decode($this->normalizer->normalize($contents), true);
     }
 
     /**
-     * @param string $file
-     * @return boolean
+     * {@inheritDoc}
      */
-    public function supports($file)
+    public function supports($resource, $type = null)
     {
-        return 'json' === pathinfo($file, PATHINFO_EXTENSION);
+        return is_string($resource) && 'json' === pathinfo($resource, PATHINFO_EXTENSION);
     }
 }

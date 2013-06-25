@@ -37,7 +37,7 @@ class ConfigServiceProvider implements \Silex\ServiceProviderInterface
         });
 
         $app['config.json_file_loader'] = $app->share(function (Application $app) {
-            return new JsonFileLoader($app['config.locator'], $app['config.normalizer']);
+            return new JsonFileLoader($app['config.normalizer'], $app['config.locator']);
         });
 
         $app['configurator'] = $app->share(function (Application $app) {

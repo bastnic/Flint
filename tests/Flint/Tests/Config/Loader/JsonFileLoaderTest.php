@@ -16,7 +16,7 @@ class JsonFileLoaderTest extends \PHPUnit_Framework_TestCase
             return $args;
         }));
 
-        $this->loader = new JsonFileLoader(new FileLocator($paths), $normalizer);
+        $this->loader = new JsonFileLoader($normalizer, new FileLocator($paths));
     }
 
     public function testItLoadsAsJsonFile()
@@ -24,9 +24,17 @@ class JsonFileLoaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array('service_parameter' => 'hello'), $this->loader->load('config.json'));
     }
 
-    public function testItThrowsExceptionIfFileIsntJson()
+    public function testItSupportsJson()
     {
-        $this->setExpectedException('InvalidArgumentException', 'Format for file "unsupported.ini" is not supported.');
+        $this->assertTrue($this->loader->supports('config.json'));
+        $this->assertFalse($this->loader->supports('config.ini'));
+        $this->assertFalse($this->loader->supports('config.xml'));
+        $this->assertFalse($this->loader->supports('config.php'));
+    }
+
+    public function testUnsupportedThrowExceptionWhenLoading()
+    {
+        $this->setExpectedException('Symfony\Component\Config\Exception\FileLoaderLoadException');
 
         $this->loader->load('unsupported.ini');
     }

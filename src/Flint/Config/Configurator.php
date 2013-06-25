@@ -2,10 +2,10 @@
 
 namespace Flint\Config;
 
-use Flint\Config\Loader\JsonFileLoader;
 use Pimple;
 use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\Config\Loader\LoaderInterface;
 
 /**
  * @package Flint
@@ -17,26 +17,28 @@ class Configurator
     protected $debug;
 
     /**
-     * @param JsonFileLoader $loader
+     * @param LoaderInterface $resolver
+     * @param string $cacheDir
+     * @param boolean $debug
      */
-    public function __construct(JsonFileLoader $loader, $cacheDir, $debug = false)
+    public function __construct(LoaderInterface $resolver, $cacheDir, $debug = false)
     {
-        $this->loader = $loader;
+        $this->loader = $resolver;
         $this->cacheDir = $cacheDir;
         $this->debug = $debug;
     }
 
     /**
      * @param Pimple $pimple
-     * @param string $file
+     * @param string $resource
      */
-    public function load(Pimple $pimple, $file)
+    public function load(Pimple $pimple, $resource)
     {
         $metadata = new \ArrayObject;
-        $cache = new ConfigCache($this->cacheDir . '/' . crc32($file) . '.php', $this->debug);
+        $cache = new ConfigCache($this->cacheDir . '/' . crc32($resource) . '.php', $this->debug);
 
         if (!$cache->isFresh()) {
-            $parameters = $this->loadFile($file, $metadata);
+            $parameters = $this->loadFile($resource, $metadata);
         }
 
         if ($this->cacheDir && isset($parameters)) {
@@ -51,15 +53,15 @@ class Configurator
     }
 
     /**
-     * @param string $file
+     * @param string $resource
      * @param ArrayObject $metadata
      * @return array
      */
-    protected function loadFile($file, \ArrayObject $metadata)
+    protected function loadFile($resource, \ArrayObject $metadata)
     {
-        $parameters = $this->loader->load($file);
+        $parameters = $this->loader->load($resource);
 
-        $metadata->append(new FileResource($file));
+        $metadata->append(new FileResource($resource));
 
         if (isset($parameters['@import'])) {
             $parameters = array_replace($this->loadFile($parameters['@import'], $metadata), $parameters);
