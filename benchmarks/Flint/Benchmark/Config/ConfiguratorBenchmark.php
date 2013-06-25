@@ -21,6 +21,9 @@ class ConfiguratorBenchmark extends \Athletic\AthleticEvent
             'config.cache_dir' => sys_get_temp_dir(),
         ));
 
+        // make sure a previous run isnt interfering
+        @unlink(sys_get_temp_dir() . '/' . crc32('config.json') . '.php');
+
         // Create configurator and warmup cache
         $this->configurator = new Configurator(new JsonFileLoader($locator, new ChainNormalizer()));
         $this->configurator->load($this->app, 'config.json');

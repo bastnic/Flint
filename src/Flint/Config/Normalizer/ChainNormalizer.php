@@ -7,7 +7,7 @@ namespace Flint\Config\Normalizer;
  */
 class ChainNormalizer implements NormalizerInterface
 {
-    protected $normalizers;
+    protected $normalizers = array();
 
     /**
      * @param array $normalizers
