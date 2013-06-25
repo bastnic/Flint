@@ -27,7 +27,7 @@ class ConfiguratorBenchmark extends \Athletic\AthleticEvent
     }
 
     /**
-     * @iterations 1000
+     * @iterations 10000
      */
     public function loadConfigFile()
     {
