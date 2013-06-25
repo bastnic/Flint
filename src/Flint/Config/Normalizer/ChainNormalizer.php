@@ -10,6 +10,14 @@ class ChainNormalizer implements NormalizerInterface
     protected $normalizers;
 
     /**
+     * @param array $normalizers
+     */
+    public function __construct(array $normalizers = array())
+    {
+        array_map(array($this, 'add'), $normalizers);
+    }
+
+    /**
      * @param NormalizerInterface $normalizer
      */
     public function add(NormalizerInterface $normalizer)
