@@ -2,7 +2,7 @@
 
 namespace Flint\Config\Loader;
 
-use Flint\Config\Normalizer\ChainNormalizer;
+use Flint\Config\Normalizer\NormalizerInterface;
 use Symfony\Component\Config\FileLocator;
 
 /**
@@ -17,7 +17,7 @@ class JsonFileLoader
      * @param FileLocator $locator
      * @param ChainNormalizer $normalizer
      */
-    public function __construct(FileLocator $locator, ChainNormalizer $normalizer)
+    public function __construct(FileLocator $locator, NormalizerInterface $normalizer)
     {
         $this->locator = $locator;
         $this->normalizer = $normalizer;

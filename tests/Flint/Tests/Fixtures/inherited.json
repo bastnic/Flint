@@ -1,0 +1,4 @@
+{
+    "@import" : "config.json",
+    "inherited_config" : true
+}
