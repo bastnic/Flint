@@ -15,9 +15,7 @@ CONTENT;
 
     public function setUp()
     {
-        $this->loader = $this->getMockBuilder('Flint\Config\Loader\JsonFileLoader')->disableOriginalConstructor()
-            ->getMock();
-
+        $this->loader = $this->getMock('Symfony\Component\Config\Loader\LoaderInterface');
         $this->cacheFile = "/var/tmp/1058386122.php";
     }
 
@@ -33,7 +31,7 @@ CONTENT;
 
         $pimple = new Pimple;
 
-        $this->createConfigurator()->load($pimple, 'config.json');
+        $this->createConfigurator()->configure($pimple, 'config.json');
 
         $this->assertEquals('hello', $pimple['service_parameter']);
     }
@@ -51,7 +49,7 @@ CONTENT;
 
         $pimple = new Pimple;
 
-        $this->createConfigurator()->load($pimple, 'config.json');
+        $this->createConfigurator()->configure($pimple, 'config.json');
 
         $this->assertEquals('hello', $pimple['service_parameter']);
         $this->assertFalse($pimple['new_parameter']);
@@ -66,7 +64,7 @@ CONTENT;
 
         $this->loader->expects($this->never())->method('load');
 
-        $this->createConfigurator(false)->load($pimple, 'config.json');
+        $this->createConfigurator(false)->configure($pimple, 'config.json');
 
         $this->assertEquals('hello', $pimple['service_parameter']);
     }
@@ -79,7 +77,7 @@ CONTENT;
 
         $pimple = new Pimple;
 
-        $this->createConfigurator(false)->load($pimple, 'config.json');
+        $this->createConfigurator(false)->configure($pimple, 'config.json');
 
         $this->assertEquals(file_get_contents($this->cacheFile), static::CACHE_CONTENT);
 

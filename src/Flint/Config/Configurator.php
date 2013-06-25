@@ -32,13 +32,13 @@ class Configurator
      * @param Pimple $pimple
      * @param string $resource
      */
-    public function load(Pimple $pimple, $resource)
+    public function configure(Pimple $pimple, $resource)
     {
         $metadata = new \ArrayObject;
         $cache = new ConfigCache($this->cacheDir . '/' . crc32($resource) . '.php', $this->debug);
 
         if (!$cache->isFresh()) {
-            $parameters = $this->loadFile($resource, $metadata);
+            $parameters = $this->load($resource, $metadata);
         }
 
         if ($this->cacheDir && isset($parameters)) {
@@ -57,14 +57,14 @@ class Configurator
      * @param ArrayObject $metadata
      * @return array
      */
-    protected function loadFile($resource, \ArrayObject $metadata)
+    protected function load($resource, \ArrayObject $metadata)
     {
         $parameters = $this->loader->load($resource);
 
         $metadata->append(new FileResource($resource));
 
         if (isset($parameters['@import'])) {
-            $parameters = array_replace($this->loadFile($parameters['@import'], $metadata), $parameters);
+            $parameters = array_replace($this->load($parameters['@import'], $metadata), $parameters);
         }
 
         return $parameters;
