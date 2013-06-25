@@ -3,9 +3,9 @@
 namespace Flint\Benchmark\Config;
 
 use Flint\Config\Configurator;
-use Flint\Config\Normalizer\ChainNormalizer;
 use Flint\Config\Loader\JsonFileLoader;
-use Silex\Application;
+use Flint\Config\Normalizer\ChainNormalizer;
+use Pimple;
 use Symfony\Component\Config\FileLocator;
 
 class ConfiguratorBenchmark extends \Athletic\AthleticEvent
@@ -16,17 +16,14 @@ class ConfiguratorBenchmark extends \Athletic\AthleticEvent
             __DIR__ . '/../../../../tests/Flint/Tests/Fixtures',
         ));
 
-        $this->app = new Application(array(
-            'debug'            => false,
-            'config.cache_dir' => sys_get_temp_dir(),
-        ));
+        $this->pimple = new Pimple;
 
         // make sure a previous run isnt interfering
         @unlink(sys_get_temp_dir() . '/' . crc32('config.json') . '.php');
 
         // Create configurator and warmup cache
-        $this->configurator = new Configurator(new JsonFileLoader($locator, new ChainNormalizer()));
-        $this->configurator->load($this->app, 'config.json');
+        $this->configurator = new Configurator(new JsonFileLoader(new ChainNormalizer, $locator), sys_get_temp_dir());
+        $this->configurator->load($this->pimple, 'config.json');
     }
 
     /**
@@ -34,6 +31,6 @@ class ConfiguratorBenchmark extends \Athletic\AthleticEvent
      */
     public function loadConfigFile()
     {
-        $this->configurator->load($this->app, 'config.json');
+        $this->configurator->load($this->pimple, 'config.json');
     }
 }
