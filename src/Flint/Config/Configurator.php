@@ -29,7 +29,7 @@ class Configurator
     public function load(Application $app, $file)
     {
         $metadata = array(new FileResource($file));
-        $cache = new ConfigCache($app['config.cache_dir'] . '/' . crc32($file) . '.php', false);
+        $cache = new ConfigCache($app['config.cache_dir'] . '/' . crc32($file) . '.php', $app['debug']);
         $fresh = $cache->isFresh();
 
         if (!$fresh) {

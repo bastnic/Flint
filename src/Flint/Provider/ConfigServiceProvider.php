@@ -19,8 +19,6 @@ class ConfigServiceProvider implements \Silex\ServiceProviderInterface
      */
     public function register(Application $app)
     {
-        $app['config.cache_dir'] = '';
-
         $app['config.paths'] = function (Application $app) {
             return array($app['root_dir'] . '/config', $app['root_dir']);
         };
@@ -46,6 +44,10 @@ class ConfigServiceProvider implements \Silex\ServiceProviderInterface
         $app['configurator'] = $app->share(function (Application $app) {
             return new Configurator($app['config.json_file_loader']);
         });
+
+        if (!isset($app['config.cache_dir'])) {
+            $app['config.cache_dir'] = null;
+        }
     }
 
     /**
