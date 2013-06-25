@@ -3,7 +3,7 @@
 namespace Flint\Tests\Config;
 
 use Flint\Config\Configurator;
-use Silex\Application;
+use Pimple;
 
 class ConfiguratorTest extends \PHPUnit_Framework_TestCase
 {
@@ -18,12 +18,6 @@ CONTENT;
         $this->loader = $this->getMockBuilder('Flint\Config\Loader\JsonFileLoader')->disableOriginalConstructor()
             ->getMock();
 
-        $this->configurator = new Configurator($this->loader);
-
-        $this->app = new Application();
-        $this->app['debug'] = true;
-        $this->app['config.cache_dir'] = '/var/tmp';
-
         $this->cacheFile = "/var/tmp/1058386122.php";
     }
 
@@ -32,44 +26,49 @@ CONTENT;
         @unlink($this->cacheFile);
     }
 
-    public function testItBuilderApplication()
+    public function testItBuilderPimple()
     {
-        $this->app['config.cache_dir'] = null;
-
         $this->loader->expects($this->once())->method('load')->with($this->equalTo('config.json'))
             ->will($this->returnValue(array('service_parameter' => 'hello')));
 
-        $this->configurator->load($this->app, 'config.json');
+        $pimple = new Pimple;
 
-        $this->assertEquals('hello', $this->app['service_parameter']);
+        $this->createConfigurator()->load($pimple, 'config.json');
+
+        $this->assertEquals('hello', $pimple['service_parameter']);
     }
 
-    public function testItBuildsApplicationWithInheritedConfig()
+    public function testItBuildsPimpleWithInheritedConfig()
     {
         $this->loader->expects($this->at(0))->method('load')->with($this->equalTo('config.json'))
             ->will($this->returnValue(array('@import' => 'inherited.json', 'service_parameter' => 'hello')));
 
         $this->loader->expects($this->at(1))->method('load')->with($this->equalTo('inherited.json'))
+            ->will($this->returnValue(array('@import' => 'most_parent.json', 'service_parameter' => 'not hello', 'new_parameter' => false)));
+
+        $this->loader->expects($this->at(2))->method('load')->with($this->equalTo('most_parent.json'))
             ->will($this->returnValue(array('service_parameter' => 'other thing', 'new_parameter' => true)));
 
-        $this->configurator->load($this->app, 'config.json');
+        $pimple = new Pimple;
 
-        $this->assertEquals('hello', $this->app['service_parameter']);
-        $this->assertEquals(true, $this->app['new_parameter']);
+        $this->createConfigurator()->load($pimple, 'config.json');
+
+        $this->assertEquals('hello', $pimple['service_parameter']);
+        $this->assertFalse($pimple['new_parameter']);
     }
 
     public function testAFreshCacheSkipsLoader()
     {
-        $this->app['debug'] = false;
-
         // Create a fresh cache
         file_put_contents($this->cacheFile, static::CACHE_CONTENT);
 
+        $pimple = new Pimple;
+
         $this->loader->expects($this->never())->method('load');
 
-        $this->configurator->load($this->app, 'config.json');
+        $this->createConfigurator(false)->load($pimple, 'config.json');
 
-        $this->assertEquals('hello', $this->app['service_parameter']);
+        $this->assertEquals('hello', $pimple['service_parameter']);
     }
 
     public function testStaleCacheWritesFile()
@@ -78,8 +77,16 @@ CONTENT;
             'service_parameter' => 'hello',
         )));
 
-        $this->app['debug'] = false;
+        $pimple = new Pimple;
 
-        $this->configurator->load($this->app, 'config.json');
+        $this->createConfigurator(false)->load($pimple, 'config.json');
+
+        $this->assertEquals(file_get_contents($this->cacheFile), static::CACHE_CONTENT);
+
+    }
+
+    protected function createConfigurator($debug = true)
+    {
+        return new Configurator($this->loader, '/var/tmp', $debug);
     }
 }

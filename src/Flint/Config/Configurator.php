@@ -2,10 +2,10 @@
 
 namespace Flint\Config;
 
-use Flint\Config\Loader\JsonFileLoader;
-use Silex\Application;
+use Pimple;
 use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\Config\Loader\LoaderInterface;
 
 /**
  * @package Flint
@@ -13,57 +13,71 @@ use Symfony\Component\Config\Resource\FileResource;
 class Configurator
 {
     protected $loader;
+    protected $cacheDir;
+    protected $debug;
 
     /**
-     * @param JsonFileLoader $loader
+     * @param LoaderInterface $resolver
+     * @param string $cacheDir
+     * @param boolean $debug
      */
-    public function __construct(JsonFileLoader $loader)
+    public function __construct(LoaderInterface $resolver, $cacheDir, $debug = false)
     {
-        $this->loader = $loader;
+        $this->loader = $resolver;
+        $this->cacheDir = $cacheDir;
+        $this->debug = $debug;
     }
 
     /**
-     * @param Application $app
-     * @param string $file
+     * @param Pimple $pimple
+     * @param string $resource
      */
-    public function load(Application $app, $file)
+    public function load(Pimple $pimple, $resource)
     {
-        $metadata = array(new FileResource($file));
-        $cache = new ConfigCache($app['config.cache_dir'] . '/' . crc32($file) . '.php', $app['debug']);
-        $fresh = $cache->isFresh();
+        $metadata = new \ArrayObject;
+        $cache = new ConfigCache($this->cacheDir . '/' . crc32($resource) . '.php', $this->debug);
 
-        if (!$fresh) {
-            $parameters = $this->loader->load($file);
-
-            if (isset($parameters['@import'])) {
-                $parameters = array_replace($this->loader->load($parameters['@import']), $parameters);
-                $metadata[] = new FileResource($parameters['@import']);
-            }
+        if (!$cache->isFresh()) {
+            $parameters = $this->loadFile($resource, $metadata);
         }
 
-        if (!$app['config.cache_dir']) {
-            $this->build($app, $parameters);
-
-            return;
+        if ($this->cacheDir && isset($parameters)) {
+            $cache->write('<?php $parameters = ' . var_export($parameters, true) . ';', iterator_to_array($metadata));
         }
 
-        if (!$fresh) {
-            $cache->write('<?php $parameters = ' . var_export($parameters, true) . ';', $metadata);
+        if (!isset($parameters)) {
+            require (string) $cache;
         }
 
-        require (string) $cache;
-
-        $this->build($app, $parameters);
+        $this->build($pimple, $parameters);
     }
 
     /**
-     * @param Application $app
+     * @param string $resource
+     * @param ArrayObject $metadata
+     * @return array
+     */
+    protected function loadFile($resource, \ArrayObject $metadata)
+    {
+        $parameters = $this->loader->load($resource);
+
+        $metadata->append(new FileResource($resource));
+
+        if (isset($parameters['@import'])) {
+            $parameters = array_replace($this->loadFile($parameters['@import'], $metadata), $parameters);
+        }
+
+        return $parameters;
+    }
+
+    /**
+     * @param Pimple $pimple
      * @param array $parameters
      */
-    protected function build(Application $app, array $parameters)
+    protected function build(Pimple $pimple, array $parameters)
     {
         foreach ($parameters as $key => $value) {
-            $app[$key] = $value;
+            $pimple[$key] = $value;
         }
     }
 }
