@@ -290,3 +290,6 @@ It is very easy to use:
 The Configurator will replace placeholders marked with ``%my_parameter%`` with the corresponding parameter in your
 application which in this instance would be ``$app['my_parameter']``. It will also replace placeholders marked as
 ``#my_env#`` with environment variables.
+
+It is possible to inherit from a config file by using a special key ``@import`` and set its value to another file. The
+loaded parameters from ``@import`` will have the lowest priority when merging the two files.
