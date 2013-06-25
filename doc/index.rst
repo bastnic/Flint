@@ -269,3 +269,24 @@ application shipped with Symfony. It gives access to Pimple in commands.
             $pimple = $this->getApplication()->getPimple();
         }
     }
+
+Configuration
+-------------
+
+Every application need to have some parameters configured based on environment or other parameters.
+Flint comes with a ``Configurator`` which reads ``json`` files and sets them as parmeters on your application.
+
+It is very easy to use:
+
+.. code-block:: php
+
+    <?php
+
+    use Flint\Application;
+
+    $app = new Application($rootDir, $debug);
+    $app['configurator']->load($app, 'app/config/prod.json');
+
+The Configurator will replace placeholders marked with ``%my_parameter%`` with the corresponding parameter in your
+application which in this instance would be ``$app['my_parameter']``. It will also replace placeholders marked as
+``#my_env#`` with environment variables.
