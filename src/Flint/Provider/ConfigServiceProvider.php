@@ -28,11 +28,9 @@ class ConfigServiceProvider implements \Silex\ServiceProviderInterface
         });
 
         $app['config.normalizer'] = $app->share(function (Application $app) {
-            $pimpleAware = new PimpleAwareNormalizer;
-            $pimpleAware->setPimple($app);
-
             $normalizer = new ChainNormalizer;
-            $normalizer->add($pimpleAware);
+            $normalizer->add(new PimpleAwareNormalizer($app));
+            $normalizer->add(new EnvironmentNormalizer);
 
             return $normalizer;
         });

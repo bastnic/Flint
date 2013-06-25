@@ -36,7 +36,7 @@ class Configurator
             $parameters = $this->loader->load($file);
 
             if (isset($parameters['@import'])) {
-                $parameters = array_replace($parameters, $this->loader->load($parameters['@import']));
+                $parameters = array_replace($this->loader->load($parameters['@import']), $parameters);
                 $metadata[] = new FileResource($parameters['@import']);
             }
         }

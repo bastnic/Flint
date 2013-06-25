@@ -10,8 +10,7 @@ class PimpleAwareNormalizerTest extends \PHPUnit_Framework_TestCase
     {
         $pimple = new \Pimple(array('service_parameter' => 'hello'));
 
-        $normalizer = new PimpleAwareNormalizer;
-        $normalizer->setPimple($pimple);
+        $normalizer = new PimpleAwareNormalizer($pimple);
 
         $this->assertEquals('hello', $normalizer->normalize('%service_parameter%'));
     }

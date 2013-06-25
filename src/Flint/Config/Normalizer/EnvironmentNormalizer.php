@@ -2,22 +2,12 @@
 
 namespace Flint\Config\Normalizer;
 
-use Pimple;
-
 /**
  * @package Flint
  */
-class PimpleAwareNormalizer extends \Flint\PimpleAware implements NormalizerInterface
+class EnvironmentNormalizer implements NormalizerInterface
 {
-    const PLACEHOLDER = '/%([A-Za-z0-9_.]+)%/';
-
-    /**
-     * @param Pimple $pimple
-     */
-    public function __construct(Pimple $pimple = null)
-    {
-        $this->setPimple($pimple);
-    }
+    const PLACEHOLDER = '/#([A-Za-z0-9_.]+)#/';
 
     /**
      * @param string $contents
@@ -34,8 +24,6 @@ class PimpleAwareNormalizer extends \Flint\PimpleAware implements NormalizerInte
      */
     protected function callback($matches)
     {
-        $value = $this->pimple[$matches[1]];
-
-        return is_bool($value) ? ($value ? 'true' : 'false') : $value;
+        return getenv($matches[1]);
     }
 }
