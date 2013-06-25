@@ -9,3 +9,6 @@ before_script:
     - "echo '{\"config\":{\"github-oauth\": {\"github.com\":\"fa354b2f030836334eac842f8fd69a03e353d247\"}}}' > ~/.composer/config.json"
     - "composer install --dev"
 
+
+after_script:
+    - "php ./vendor/athletic/athletic/bootstrap.php -p benchmarks -b benchmarks/bootstrap.php"
