@@ -28,12 +28,17 @@ class Configurator
      */
     public function load(Application $app, $file)
     {
-        $cacheFile = $app['config.cache_dir'] . '/' . crc32($file) . '.php';
-        $cache = new ConfigCache($cacheFile, false);
+        $metadata = array(new FileResource($file));
+        $cache = new ConfigCache($app['config.cache_dir'] . '/' . crc32($file) . '.php', false);
         $fresh = $cache->isFresh();
 
         if (!$fresh) {
             $parameters = $this->loader->load($file);
+
+            if (isset($parameters['@import'])) {
+                $parameters = array_replace($parameters, $this->loader->load($parameters['@import']));
+                $metadata[] = new FileResource($parameters['@import']);
+            }
         }
 
         if (!$app['config.cache_dir']) {
@@ -43,11 +48,10 @@ class Configurator
         }
 
         if (!$fresh) {
-            $metadata = array(new FileResource($file));
             $cache->write('<?php $parameters = ' . var_export($parameters, true) . ';', $metadata);
         }
 
-        require $cacheFile;
+        require (string) $cache;
 
         $this->build($app, $parameters);
     }
