@@ -23,7 +23,7 @@ class ConfiguratorBenchmark extends \Athletic\AthleticEvent
 
         // Create configurator and warmup cache
         $this->configurator = new Configurator(new JsonFileLoader(new ChainNormalizer, $locator), sys_get_temp_dir());
-        $this->configurator->load($this->pimple, 'config.json');
+        $this->configurator->configure($this->pimple, 'config.json');
     }
 
     /**
@@ -31,6 +31,6 @@ class ConfiguratorBenchmark extends \Athletic\AthleticEvent
      */
     public function loadConfigFile()
     {
-        $this->configurator->load($this->pimple, 'config.json');
+        $this->configurator->configure($this->pimple, 'config.json');
     }
 }
