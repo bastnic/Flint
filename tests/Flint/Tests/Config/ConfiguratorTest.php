@@ -44,6 +44,9 @@ CONTENT;
             ->will($this->returnValue(array('@import' => 'inherited.json', 'service_parameter' => 'hello')));
 
         $this->loader->expects($this->at(1))->method('load')->with($this->equalTo('inherited.json'))
+            ->will($this->returnValue(array('@import' => 'most_parent.json', 'service_parameter' => 'not hello', 'new_parameter' => false)));
+
+        $this->loader->expects($this->at(2))->method('load')->with($this->equalTo('most_parent.json'))
             ->will($this->returnValue(array('service_parameter' => 'other thing', 'new_parameter' => true)));
 
         $pimple = new Pimple;
@@ -51,7 +54,7 @@ CONTENT;
         $this->createConfigurator()->load($pimple, 'config.json');
 
         $this->assertEquals('hello', $pimple['service_parameter']);
-        $this->assertEquals(true, $pimple['new_parameter']);
+        $this->assertFalse($pimple['new_parameter']);
     }
 
     public function testAFreshCacheSkipsLoader()

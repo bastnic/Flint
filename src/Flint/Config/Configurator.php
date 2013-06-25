@@ -32,20 +32,15 @@ class Configurator
      */
     public function load(Pimple $pimple, $file)
     {
-        $metadata = array(new FileResource($file));
+        $metadata = new \ArrayObject;
         $cache = new ConfigCache($this->cacheDir . '/' . crc32($file) . '.php', $this->debug);
 
-        if (!$fresh = $cache->isFresh()) {
-            $parameters = $this->loader->load($file);
-
-            if (isset($parameters['@import'])) {
-                $parameters = array_replace($this->loader->load($parameters['@import']), $parameters);
-                $metadata[] = new FileResource($parameters['@import']);
-            }
+        if (!$cache->isFresh()) {
+            $parameters = $this->loadFile($file, $metadata);
         }
 
-        if ($this->cacheDir && !$fresh) {
-            $cache->write('<?php $parameters = ' . var_export($parameters, true) . ';', $metadata);
+        if ($this->cacheDir && isset($parameters)) {
+            $cache->write('<?php $parameters = ' . var_export($parameters, true) . ';', iterator_to_array($metadata));
         }
 
         if (!isset($parameters)) {
@@ -53,6 +48,24 @@ class Configurator
         }
 
         $this->build($pimple, $parameters);
+    }
+
+    /**
+     * @param string $file
+     * @param ArrayObject $metadata
+     * @return array
+     */
+    protected function loadFile($file, \ArrayObject $metadata)
+    {
+        $parameters = $this->loader->load($file);
+
+        $metadata->append(new FileResource($file));
+
+        if (isset($parameters['@import'])) {
+            $parameters = array_replace($this->loadFile($parameters['@import'], $metadata), $parameters);
+        }
+
+        return $parameters;
     }
 
     /**
