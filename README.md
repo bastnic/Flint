@@ -15,3 +15,12 @@ Who
 ---
 
 Build by [@henrikbjorn](http://twitter.com/henrikbjorn) at [Peytz & Co](http://peytz.dk). With the help of [other contributors](https://github.com/henrikbjorn/flint/graphs/contributors).
+
+Benchmarking
+------------
+
+This is the benchmark branch. To run the benchmarks use the following command line.
+
+``` bash
+$ php ./vendor/athletic/athletic/bootstrap.php -p benchmarks -b benchmarks/bootstrap.php
+```
