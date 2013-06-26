@@ -1,0 +1,8 @@
+{
+    "security.access_rules" : [
+        ["^/login",         ["IS_AUTHENTICATED_ANONYMOUSLY"]],
+        ["^/(about|home)*", ["IS_AUTHENTICATED_ANONYMOUSLY"]],
+        ["^/invitation*",   ["IS_AUTHENTICATED_ANONYMOUSLY"]],
+        [".*",              ["ROLE_USER"]]
+    ]
+}

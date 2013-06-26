@@ -1,0 +1,51 @@
+{
+    "@import" : "base.json",
+
+    "config.paths" : ["%root_dir%/src/Acme/Resources"],
+
+    "odm.document_namespaces" : { "Acme" : "Acme\\Model" },
+    "odm.mapping_paths" : { "%root_dir%/src/Acme/Resources/config/doctrine" : "Acme\\Model" },
+    "odm.default_database" : "diveshare",
+    "odm.hydrator_dir" : "%root_dir%/cache/prod/doctrine",
+    "odm.proxy_dir" : "%root_dir%/cache/prod/doctrine",
+
+    "form.secret" : "lollipop-with-red-and-other-colorful-stripes",
+
+    "twig.path" : "%root_dir%/src/Acme/Resources/views",
+
+    "monolog.logfile" : "%root_dir%/log/prod.log",
+
+    "routing.resource" : "config/routing.xml",
+
+    "routing.options" : {
+        "cache_dir" : "%root_dir%/cache/prod/routing"
+    },
+
+    "lite_cqrs.commands" : {
+        "Acme\\DomainCommand\\InviteCommand"           : "invitation_handler",
+        "Acme\\DomainCommand\\AcceptInvitationCommand" : "invitation_handler",
+        "Acme\\DomainCommand\\LogDiveCommand"          : "dive_handler"
+    },
+
+    "lite_cqrs.event_handlers" : {
+        "Invited" : "event.invitation_handler",
+        "DiveLogged" : "event.activity_handler"
+    },
+
+    "twig.form.templates" : [
+        "form_bootstrap_layout.html.twig"
+    ],
+
+    "twig.options" : {
+        "cache"            : "%root_dir%/cache/prod/twig"
+    },
+
+    "orm.proxy_dir" : "%root_dir%/cache/prod/doctrine",
+
+    "orm.params" : {
+        "driver" : "pdo_mysql",
+        "user" : "root",
+        "password" : null,
+        "dbname" : "diveshare"
+    }
+}
